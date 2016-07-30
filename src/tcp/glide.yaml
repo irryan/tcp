@@ -1,0 +1,5 @@
+package: test-tcp-server
+import:
+- package: github.com/onsi/gomega
+- package: github.com/onsi/ginkgo
+- package: gopkg.in/yaml.v2

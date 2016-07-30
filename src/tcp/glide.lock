@@ -1,0 +1,10 @@
+hash: f220f00caae250808b5daa700a3e076c0c4d420a0eb8f1b1a8d3e2b27e50d423
+updated: 2016-07-30T13:30:35.7611577-07:00
+imports:
+- name: github.com/onsi/ginkgo
+  version: 74c678d97c305753605c338c6c78c49ec104b5e7
+- name: github.com/onsi/gomega
+  version: 9ed8da19f2156b87a803a8fdf6d126f627a12db1
+- name: gopkg.in/yaml.v2
+  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
+devImports: []
