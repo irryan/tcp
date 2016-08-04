@@ -17,7 +17,7 @@ type BufferHandler interface {
     HandleBuffer([]byte) ([]byte, error)
 }
 
-func NewTcpServer(logger log.Logger, port string, handler BufferHandler) TcpServer {
+func NewTcpServer(logger *log.Logger, port string, handler BufferHandler) TcpServer {
     return &tcpServer{
         port: port,
         handler: handler,
