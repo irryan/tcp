@@ -1,4 +1,4 @@
-package: test-tcp-server
+package: tcp
 import:
 - package: github.com/onsi/gomega
 - package: github.com/onsi/ginkgo
