@@ -19,6 +19,7 @@ type BufferHandler interface {
 
 func NewTcpServer(logger *log.Logger, port string, handler BufferHandler) TcpServer {
     return &tcpServer{
+        logger: logger,
         port: port,
         handler: handler,
         quit: make(chan struct{}),
@@ -26,7 +27,7 @@ func NewTcpServer(logger *log.Logger, port string, handler BufferHandler) TcpSer
 }
 
 type tcpServer struct {
-    logger log.Logger
+    logger *log.Logger
     port string
     handler BufferHandler
 
