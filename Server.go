@@ -8,27 +8,34 @@ import (
     "time"
 )
 
-type ExpectationHandler func([]byte) error
-
-type TestTcpServer struct {
-    port string
-    quit chan struct{}
-    wg sync.WaitGroup
-
-    ln net.Listener
-
-    expectations []ExpectationHandler
-    errs []error
+type TcpServer interface {
+    Start() error
+    Stop()
 }
 
-func NewTestTcpServer(port string) *TestTcpServer {
-    return &TestTcpServer{
+type BufferHandler interface {
+    HandleBuffer([]byte) ([]byte, error)
+}
+
+func NewTcpServer(logger log.Logger, port string, handler BufferHandler) TcpServer {
+    return &tcpServer{
         port: port,
+        handler: handler,
         quit: make(chan struct{}),
     }
 }
 
-func (s *TestTcpServer) Start() (err error) {
+type tcpServer struct {
+    logger log.Logger
+    port string
+    handler BufferHandler
+
+    ln net.Listener
+    quit chan struct{}
+    wg sync.WaitGroup
+}
+
+func (s *tcpServer) Start() (err error) {
     s.ln, err = net.Listen("tcp", fmt.Sprintf(":%s", s.port))
     if err != nil {
         return
@@ -68,16 +75,18 @@ func (s *TestTcpServer) Start() (err error) {
                             continue
                         }
 
-                        log.Println(err)
+                        s.logger.Println(err)
                         return
                     }
 
-                    if len(s.expectations) > 0 {
-                        next := s.expectations[0]
-                        s.expectations = s.expectations[1:]
-                        if err = next(buff); err != nil {
-                            s.errs = append(s.errs, err)
-                        }
+                    resp, err := s.handler.HandleBuffer(buff)
+                    if err != nil {
+                        s.logger.Println(err)
+                        continue
+                    }
+
+                    if _, err := conn.Write(resp); err != nil {
+                        s.logger.Println(err)
                     }
                 }
             }(conn, quit)
@@ -87,20 +96,8 @@ func (s *TestTcpServer) Start() (err error) {
     return nil
 }
 
-func (s *TestTcpServer) Stop() {
+func (s *tcpServer) Stop() {
     s.ln.Close()
     close(s.quit)
     s.wg.Wait()
-}
-
-func (s *TestTcpServer) AddExpectation(expectation ExpectationHandler) {
-    s.expectations = append(s.expectations, expectation)
-}
-
-func (s *TestTcpServer) HasFailedExpectations() bool {
-    return len(s.errs) > 0
-}
-
-func (s *TestTcpServer) HasRemainingExpectations() bool {
-    return len(s.expectations) > 0
 }
